@@ -8,7 +8,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once('../config/db.php');
+    require_once('../includes/db.php');
     
     // Obtener datos del body
     $data = json_decode(file_get_contents('php://input'), true);
