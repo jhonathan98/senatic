@@ -1,13 +1,30 @@
 <?php
 session_start();
-if (!isset($_SESSION['user'])) {
-    header("Location: index.php");
-    exit;
-}
+require_once 'config.php';
+require_once 'includes/functions.php';
+
+// Verificar autenticación
+requireAuth();
 
 $user = $_SESSION['user'];
 $role = $user['role'];
-$section = $_GET['section'] ?? 'panel';
+$section = sanitizeInput($_GET['section'] ?? 'panel');
+
+// Verificar si la sesión ha expirado (6 horas)
+if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > 21600)) {
+    session_destroy();
+    redirect('index.php?message=Sesión expirada');
+}
+
+// Procesar mensajes
+$alert_message = '';
+if (isset($_SESSION['success'])) {
+    $alert_message = showAlert($_SESSION['success'], 'success');
+    unset($_SESSION['success']);
+} elseif (isset($_SESSION['error'])) {
+    $alert_message = showAlert($_SESSION['error'], 'error');
+    unset($_SESSION['error']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -159,8 +176,26 @@ $section = $_GET['section'] ?? 'panel';
                     <!-- Ver Asistencia por Fecha -->
                     <?php if ($role === 'teacher' || $role === 'admin'): ?>
                         <li class="nav-item">
-                            <a class="nav-link <?= $section === 'search_attendance' ? 'active' : '' ?>" href="?section=search_attendance">
-                                <i class="bi bi-calendar-event me-2"></i> Ver Asistencia por Fecha
+                            <a class="nav-link <?= in_array($section, ['search_attendance', 'attendance_search']) ? 'active' : '' ?>" href="?section=attendance_search">
+                                <i class="bi bi-calendar-event me-2"></i> Consultar Asistencia
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <!-- Reportes -->
+                    <?php if ($role === 'teacher' || $role === 'admin'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $section === 'reports' ? 'active' : '' ?>" href="?section=reports">
+                                <i class="bi bi-graph-up me-2"></i> Reportes
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <!-- Asignar estudiantes (solo admin) -->
+                    <?php if ($role === 'admin'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $section === 'assign_students' ? 'active' : '' ?>" href="?section=assign_students">
+                                <i class="bi bi-people me-2"></i> Asignar Estudiantes
                             </a>
                         </li>
                     <?php endif; ?>
@@ -181,8 +216,24 @@ $section = $_GET['section'] ?? 'panel';
                         </a>
                     </li>
 
+                    <hr class="text-white-50">
+                    
+                    <!-- Mi Perfil -->
+                    <li class="nav-item">
+                        <a class="nav-link <?= $section === 'profile' ? 'active' : '' ?>" href="?section=profile">
+                            <i class="bi bi-person-circle me-2"></i> Mi Perfil
+                        </a>
+                    </li>
+
+                    <!-- Ayuda -->
+                    <li class="nav-item">
+                        <a class="nav-link <?= $section === 'help' ? 'active' : '' ?>" href="?section=help">
+                            <i class="bi bi-question-circle me-2"></i> Ayuda
+                        </a>
+                    </li>
+
                     <!-- Cerrar sesión -->
-                    <li class="nav-item mt-auto">
+                    <li class="nav-item">
                         <a class="nav-link text-danger" href="logout.php">
                             <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
                         </a>
@@ -195,6 +246,9 @@ $section = $_GET['section'] ?? 'panel';
                 <div class="row">
                     <div class="col-2"></div>
                     <div class="col-10">
+                        <!-- Mostrar alertas -->
+                        <?= $alert_message ?>
+                        
                         <?php if ($section !== 'panel'): ?>
                             <a href="dashboard.php" class="btn btn-secondary mb-3">
                                 <i class="bi bi-arrow-left"></i> Volver al Dashboard
@@ -210,6 +264,10 @@ $section = $_GET['section'] ?? 'panel';
                             'attendance_search',
                             'search_attendance',
                             'search_student',
+                            'assign_students',
+                            'reports',
+                            'profile',
+                            'help',
                             'map'
                         ];
 

@@ -93,7 +93,7 @@ $grades = ['1°', '2°', '3°', '4°', '5°', '6°', '7°', '8°', '9°', '10°'
                     <td><?= htmlspecialchars($s['grade']) ?></td>
                     <td><?= htmlspecialchars($s['parent_name']) ?></td>
                     <td>
-                        <a href="map.php?student_id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-info">
+                        <a href="dashboard.php?section=map&student_id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-info">
                             <i class="bi bi-geo-alt"></i> Ubicación
                         </a>
                     </td>

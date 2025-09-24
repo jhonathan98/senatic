@@ -10,24 +10,57 @@ if (isset($_SESSION['user'])) {
 require_once 'config.php';
 $message = '';
 
+// Verificar si hay un mensaje en la URL
+if (isset($_GET['message'])) {
+    $message = sanitizeInput($_GET['message']);
+}
+
 if ($_POST) {
-    $username = trim($_POST['username']);
-    $password = $_POST['password'];
+    // Verificar token CSRF
+    if (!isset($_POST['csrf_token']) || !verifyCSRFToken($_POST['csrf_token'])) {
+        $message = "Token de seguridad inválido.";
+    } else {
+        $username = sanitizeInput($_POST['username']);
+        $password = $_POST['password'];
 
-    try {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
-
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user'] = $user;
-            header("Location: dashboard.php");
-            exit;
+        // Validar campos vacíos
+        if (empty($username) || empty($password)) {
+            $message = "Por favor, complete todos los campos.";
         } else {
-            $message = "Usuario o contraseña incorrectos.";
+            try {
+                $stmt = $pdo->prepare("SELECT id, username, password, role, name, document_number FROM users WHERE username = ? AND created_at IS NOT NULL");
+                $stmt->execute([$username]);
+                $user = $stmt->fetch();
+
+                if ($user && password_verify($password, $user['password'])) {
+                    // Regenerar ID de sesión por seguridad
+                    session_regenerate_id(true);
+                    
+                    // Guardar información del usuario en la sesión
+                    $_SESSION['user'] = [
+                        'id' => $user['id'],
+                        'username' => $user['username'],
+                        'role' => $user['role'],
+                        'name' => $user['name'],
+                        'document_number' => $user['document_number']
+                    ];
+                    $_SESSION['login_time'] = time();
+                    
+                    // Actualizar último acceso
+                    $update_stmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+                    $update_stmt->execute([$user['id']]);
+                    
+                    redirect("dashboard.php");
+                } else {
+                    $message = "Usuario o contraseña incorrectos.";
+                    // Log del intento fallido
+                    error_log("Intento de login fallido para usuario: $username desde IP: " . $_SERVER['REMOTE_ADDR']);
+                }
+            } catch (PDOException $e) {
+                error_log("Error en login: " . $e->getMessage());
+                $message = "Error interno. Por favor, inténtelo más tarde.";
+            }
         }
-    } catch (PDOException $e) {
-        $message = "Error de conexión: " . $e->getMessage();
     }
 }
 ?>
@@ -72,6 +105,7 @@ if ($_POST) {
         <?php endif; ?>
 
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= generateCSRFToken() ?>">
             <div class="mb-3">
                 <label>Usuario</label>
                 <input type="text" name="username" class="form-control" required autofocus>

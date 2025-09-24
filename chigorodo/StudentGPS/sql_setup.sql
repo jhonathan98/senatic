@@ -15,9 +15,16 @@ CREATE TABLE users (
     role ENUM('admin', 'parent', 'teacher') NOT NULL DEFAULT 'parent',
     document_number VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NULL,
+    phone VARCHAR(20) NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    last_login TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_role (role),
-    INDEX idx_document (document_number)
+    INDEX idx_document (document_number),
+    INDEX idx_active (is_active),
+    INDEX idx_username (username)
 );
 
 -- -----------------------------------------------------
@@ -54,13 +61,16 @@ CREATE TABLE attendance (
     student_id INT NOT NULL,
     teacher_id INT NOT NULL,
     date DATE NOT NULL,
-    status ENUM('Asistió', 'No asistió', 'Tarde') NOT NULL,
+    status ENUM('Asistió', 'No asistió', 'Tarde', 'Excusado') NOT NULL,
+    notes TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY unique_daily_attendance (student_id, date),
     INDEX idx_date (date),
-    INDEX idx_student_date (student_id, date)
+    INDEX idx_student_date (student_id, date),
+    INDEX idx_status (status)
 );
 
 -- -----------------------------------------------------
@@ -98,3 +108,42 @@ INSERT INTO users (username, password, role, document_number, name) VALUES
 
 -- Asociar profesor con estudiante
 INSERT INTO teacher_students (teacher_id, student_id) VALUES (3, 1);
+
+-- -----------------------------------------------------
+-- Tabla: activity_log (registro de actividades)
+-- -----------------------------------------------------
+CREATE TABLE activity_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    description TEXT NULL,
+    ip_address VARCHAR(45) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_date (user_id, created_at),
+    INDEX idx_action (action)
+);
+
+-- -----------------------------------------------------
+-- Tabla: notifications (notificaciones)
+-- -----------------------------------------------------
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    message TEXT NOT NULL,
+    type ENUM('info', 'warning', 'success', 'danger') DEFAULT 'info',
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_unread (user_id, is_read),
+    INDEX idx_created (created_at)
+);
+
+-- -----------------------------------------------------
+-- Insertar ubicaciones de ejemplo
+-- -----------------------------------------------------
+INSERT INTO locations (student_id, latitude, longitude, timestamp) VALUES 
+(1, 7.6656, -76.6281, NOW() - INTERVAL 5 MINUTE),
+(1, 7.6658, -76.6279, NOW() - INTERVAL 2 MINUTE),
+(1, 7.6660, -76.6277, NOW());
