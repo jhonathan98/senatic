@@ -4,6 +4,11 @@
 CREATE DATABASE IF NOT EXISTS bookdata;
 USE bookdata;
 
+-- Drop and recreate books table to ensure correct column names
+DROP TABLE IF EXISTS borrowed_books;
+DROP TABLE IF EXISTS book_reviews;
+DROP TABLE IF EXISTS books;
+
 -- Users table
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,8 +36,8 @@ CREATE TABLE books (
     description TEXT,
     cover_image VARCHAR(255) DEFAULT NULL,
     availability ENUM('available', 'borrowed', 'unavailable') DEFAULT 'available',
-    total_copies INT DEFAULT 1,
-    copies_available INT DEFAULT 1,
+    quantity INT DEFAULT 1,
+    available_quantity INT DEFAULT 1,
     publication_year INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -99,15 +104,19 @@ INSERT INTO categories (name, description) VALUES
 ('Romance', 'Novelas románticas'),
 ('Misterio', 'Novelas de misterio'),
 ('Fantasía', 'Libros de fantasía'),
-('Ciencia ficción', 'Libros de ciencia ficción');
+('Ciencia ficción', 'Libros de ciencia ficción'),
+('Narrativo', 'Libros narrativos'),
+('Ficción paranormal', 'Libros de ficción paranormal'),
+('Poema épico', 'Poemas épicos'),
+('Magia', 'Libros de magia y aventura');
 
--- Insert two administrators
+-- Insert two administrators (password: "password")
 INSERT INTO users (username, email, password, full_name, role) VALUES 
 ('admin1', 'admin1@bookdata.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin Principal', 'admin'),
 ('admin2', 'admin2@bookdata.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin Secundario', 'admin');
 
 -- Sample books
-INSERT INTO books (title, author, category, description, cover_image, availability, total_copies, copies_available, publication_year) VALUES 
+INSERT INTO books (title, author, category, description, cover_image, availability, quantity, available_quantity, publication_year) VALUES 
 ('El Principito', 'Antoine de Saint-Exupéry', 'Ficción', 'Una fábula sobre la amistad, el amor y la importancia de ver con el corazón.', 'el-principito.jpg', 'available', 3, 3, 1943),
 ('Ana de las Tejas Verdes', 'Lucy Maud Montgomery', 'Ficción', 'Una huérfana soñadora transforma la vida de quienes la rodean.', 'ana-de-las-tejas-verdes.jpg', 'available', 2, 2, 1908),
 ('La Vida del Espacio', 'Albert Einstein', 'Ciencia', 'Explora cómo la teoría de la relatividad revolucionó nuestra visión del universo.', 'la-vida-del-espacio.jpg', 'available', 1, 1, 1915),
@@ -119,22 +128,44 @@ INSERT INTO books (title, author, category, description, cover_image, availabili
 ('La Divina Comedia', 'Dante Alighieri', 'Poema épico', 'Un viaje por el infierno, el purgatorio y el cielo.', 'la-divina-comedia.jpg', 'available', 1, 1, 1320),
 ('Harry Potter y la piedra filosofal', 'J.K. Rowling', 'Magia', 'La historia de Harry Potter, un niño mago que descubre su verdadera identidad.', 'harry-potter-y-la-piedra-filosofal.jpg', 'available', 5, 5, 1997);
 
--- Insert sample users
+-- Insert sample users (password: "password")
 INSERT INTO users (username, email, password, full_name, role) VALUES 
 ('estudiante1', 'estudiante1@bookdata.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Yeshuah Bedoya', 'student'),
 ('estudiante2', 'estudiante2@bookdata.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Emmanuel Rivas', 'student'),
 ('estudiante3', 'estudiante3@bookdata.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Alison Ramirez', 'student'),
 ('estudiante4', 'estudiante4@bookdata.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Isabella Blanco', 'student');
 
--- Indexes for better performance
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_books_title ON books(title);
-CREATE INDEX idx_books_author ON books(author);
-CREATE INDEX idx_books_category ON books(category);
-CREATE INDEX idx_books_availability ON books(availability);
-CREATE INDEX idx_borrowed_books_user ON borrowed_books(user_id);
-CREATE INDEX idx_borrowed_books_book ON borrowed_books(book_id);
-CREATE INDEX idx_borrowed_books_status ON borrowed_books(status);
-CREATE INDEX idx_borrowed_books_due_date ON borrowed_books(due_date);
-CREATE INDEX idx_book_reviews_user ON book_reviews(user_id);
-CREATE INDEX idx_book_reviews_book ON book_reviews(book_id);
+-- Sample borrowed books for testing the pending returns functionality
+INSERT INTO borrowed_books (user_id, book_id, borrow_date, due_date, status) VALUES 
+-- Overdue books
+(3, 1, '2024-09-01', '2024-09-15', 'overdue'),
+(4, 3, '2024-09-05', '2024-09-19', 'overdue'),
+-- Due soon books  
+(3, 5, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 DAY), 'active'),
+(4, 7, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 DAY), 'active'),
+-- Normal active books
+(3, 2, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 14 DAY), 'active'),
+(4, 4, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 10 DAY), 'active');
+
+-- Update book availability for borrowed books
+UPDATE books SET available_quantity = available_quantity - 1 WHERE id IN (1, 2, 3, 4, 5, 7);
+
+-- Create a procedure to update overdue books automatically
+/*DELIMITER //
+CREATE PROCEDURE UpdateOverdueBooks()
+BEGIN
+    UPDATE borrowed_books 
+    SET status = 'overdue' 
+    WHERE status = 'active' 
+    AND due_date < CURDATE();
+END //
+DELIMITER ;
+*/
+-- Create an event to run the procedure daily (requires event scheduler to be enabled)
+-- SET GLOBAL event_scheduler = ON;
+-- CREATE EVENT IF NOT EXISTS UpdateOverdueDaily
+-- ON SCHEDULE EVERY 1 DAY
+-- STARTS CURRENT_DATE + INTERVAL 1 DAY
+-- DO CALL UpdateOverdueBooks();
+
+-- Note: Additional indexes are already created in table definitions above

@@ -46,7 +46,7 @@ function get_books() {
 // Function to get available books
 function get_available_books() {
     global $pdo;
-    $stmt = $pdo->prepare("SELECT b.* FROM books b LEFT JOIN borrowed_books bb ON b.id = bb.book_id AND bb.status = 'active' WHERE bb.id IS NULL OR bb.id IS NOT NULL AND bb.status = 'returned'");
+    $stmt = $pdo->prepare("SELECT * FROM books WHERE available_quantity > 0 ORDER BY title");
     $stmt->execute();
     return $stmt->fetchAll();
 }
@@ -106,23 +106,34 @@ function borrow_book($user_id, $book_id) {
 function return_book($borrow_id) {
     global $pdo;
     
-    $stmt = $pdo->prepare("SELECT * FROM borrowed_books WHERE id = ?");
-    $stmt->execute([$borrow_id]);
-    $borrow = $stmt->fetch();
-    
-    if (!$borrow || $borrow['status'] !== 'active') {
+    try {
+        $pdo->beginTransaction();
+        
+        // Get the borrowed book information
+        $stmt = $pdo->prepare("SELECT book_id FROM borrowed_books WHERE id = ? AND status IN ('active', 'overdue')");
+        $stmt->execute([$borrow_id]);
+        $borrow = $stmt->fetch();
+        
+        if (!$borrow) {
+            $pdo->rollBack();
+            return false;
+        }
+        
+        // Update the borrowed book status
+        $stmt = $pdo->prepare("UPDATE borrowed_books SET status = 'returned', return_date = NOW() WHERE id = ?");
+        $stmt->execute([$borrow_id]);
+        
+        // Increase available quantity
+        $stmt = $pdo->prepare("UPDATE books SET available_quantity = available_quantity + 1 WHERE id = ?");
+        $stmt->execute([$borrow['book_id']]);
+        
+        $pdo->commit();
+        return true;
+        
+    } catch (Exception $e) {
+        $pdo->rollBack();
         return false;
     }
-    
-    // Update book availability
-    $stmt = $pdo->prepare("UPDATE books SET copies_available = copies_available + 1 WHERE id = ?");
-    $stmt->execute([$borrow['book_id']]);
-    
-    // Update borrowing record
-    $stmt = $pdo->prepare("UPDATE borrowed_books SET status = 'returned', return_date = ? WHERE id = ?");
-    $stmt->execute([date('Y-m-d'), $borrow_id]);
-    
-    return true;
 }
 
 // Function to renew a book

@@ -105,11 +105,12 @@ $borrow_history = get_user_borrow_history($_SESSION['user_id']);
 
             <!-- Filtros de categoría -->
             <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
-                <a href="?category=all" class="genre-btn <?php echo (!isset($_GET['category']) || $_GET['category'] === 'all') ? 'active' : ''; ?>">Todos</a>
+                <a href="?category=all<?php echo $search_query ? '&query=' . urlencode($search_query) : ''; ?>" 
+                   class="genre-btn <?php echo (!isset($_GET['category']) || $_GET['category'] === 'all') ? 'active' : ''; ?>">Todos</a>
                 <?php foreach ($categories as $category): 
                     $category_slug = strtolower(str_replace(' ', '-', $category));
                 ?>
-                    <a href="?category=<?php echo urlencode($category_slug); ?>" 
+                    <a href="?category=<?php echo urlencode($category_slug); ?><?php echo $search_query ? '&query=' . urlencode($search_query) : ''; ?>" 
                        class="genre-btn <?php echo (isset($_GET['category']) && $_GET['category'] === $category_slug) ? 'active' : ''; ?>">
                         <?php echo htmlspecialchars($category); ?>
                     </a>
@@ -135,66 +136,19 @@ $borrow_history = get_user_borrow_history($_SESSION['user_id']);
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Funciones de préstamo y devolución
+        // Funciones específicas del dashboard
         function renewBook(borrowId) {
-            if (confirm('¿Estás seguro de que quieres renovar este libro?')) {
+            BookData.confirm('¿Estás seguro de que quieres renovar este libro?', () => {
                 window.location.href = 'renew_book.php?id=' + borrowId;
-            }
+            });
         }
         
         function returnBook(borrowId) {
-            if (confirm('¿Estás seguro de que quieres devolver este libro?')) {
+            BookData.confirm('¿Estás seguro de que quieres devolver este libro?', () => {
                 window.location.href = 'return_book.php?id=' + borrowId;
-            }
+            });
         }
-
-        // Manejo de filtros de categoría
-        document.addEventListener('DOMContentLoaded', function() {
-            const genreButtons = document.querySelectorAll('.genre-btn');
-            const bookCards = document.querySelectorAll('.book-card');
-            const searchInput = document.querySelector('input[name="query"]');
-
-            // Función para filtrar libros
-            function filterBooks(category, searchText = '') {
-                bookCards.forEach(card => {
-                    const cardCategory = card.dataset.category;
-                    const cardTitle = card.querySelector('.card-title').textContent.toLowerCase();
-                    const cardAuthor = card.querySelector('.book-info').textContent.toLowerCase();
-                    
-                    const matchesCategory = category === 'all' || cardCategory === category;
-                    const matchesSearch = searchText === '' || 
-                                        cardTitle.includes(searchText.toLowerCase()) ||
-                                        cardAuthor.includes(searchText.toLowerCase());
-
-                    if (matchesCategory && matchesSearch) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            }
-
-            // Event listeners para botones de categoría
-            genreButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    // Remover clase active de todos los botones
-                    genreButtons.forEach(btn => btn.classList.remove('active'));
-                    // Añadir clase active al botón clickeado
-                    button.classList.add('active');
-                    // Filtrar libros
-                    filterBooks(button.dataset.category, searchInput.value);
-                });
-            });
-
-            // Event listener para búsqueda en tiempo real
-            searchInput.addEventListener('input', (e) => {
-                const activeCategory = document.querySelector('.genre-btn.active').dataset.category;
-                filterBooks(activeCategory, e.target.value);
-            });
-        });
     </script>
 </body>
 </html>

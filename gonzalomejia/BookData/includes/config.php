@@ -5,7 +5,7 @@ define('DB_NAME', 'bookdata');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('APP_NAME', 'BookData');
-define('SITE_URL', 'http://localhost/bookdata');
+define('SITE_URL', 'http://localhost/senatic/senatic/gonzalomejia/BookData');
 
 // Session configuration
 session_start();

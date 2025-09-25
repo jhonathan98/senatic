@@ -131,25 +131,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Validación de fechas en el cliente
+        // Validación de fechas específica para detalle de libro
         document.addEventListener('DOMContentLoaded', function() {
             const borrowDate = document.getElementById('borrow_date');
             const dueDate = document.getElementById('due_date');
             
-            borrowDate.addEventListener('change', function() {
-                // La fecha de devolución debe ser al menos un día después de la fecha de préstamo
-                const minDueDate = new Date(borrowDate.value);
-                minDueDate.setDate(minDueDate.getDate() + 1);
-                dueDate.min = minDueDate.toISOString().split('T')[0];
-                
-                // Si la fecha de devolución es anterior a la nueva fecha mínima, actualizarla
-                if (dueDate.value && new Date(dueDate.value) < minDueDate) {
-                    dueDate.value = minDueDate.toISOString().split('T')[0];
-                }
-            });
+            if (borrowDate && dueDate) {
+                borrowDate.addEventListener('change', function() {
+                    const minDueDate = new Date(borrowDate.value);
+                    minDueDate.setDate(minDueDate.getDate() + 1);
+                    dueDate.min = minDueDate.toISOString().split('T')[0];
+                    
+                    if (dueDate.value && new Date(dueDate.value) < minDueDate) {
+                        dueDate.value = minDueDate.toISOString().split('T')[0];
+                    }
+                });
+            }
         });
     </script>
 </body>
