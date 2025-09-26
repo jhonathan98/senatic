@@ -40,3 +40,11 @@ CREATE TABLE turnos (
     FOREIGN KEY (psicologo_id) REFERENCES users(id),
     FOREIGN KEY (horario_id) REFERENCES horarios(id)
 );
+
+INSERT INTO `users` (`id`, `nombre`, `email`, `password`, `rol`, `edad`, `created_at`) VALUES
+(1, 'psicologo1', 'psicologo1@colegio.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'psicologo', 0, '2025-08-14 00:58:40'),
+(2, 'estudiante1', 'estudiante1@colegio.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'estudiante', 13, '2025-08-14 03:37:14'),
+(3, 'estudiante2', 'estudiante2@colegio.edu', '$2y$10$K/dSykYH7Qf1Ern3wp8Wwuf.wjtVbRrmo7yJvZWITO1P44FczzDKy', 'estudiante', 14, '2025-08-14 04:32:18'),
+(4, 'psicologo3', 'psicologo3@institucion.edu', '$2y$10$7StrOqgaGCGTiKAb3YzSgelxoBd2LQEs7yY4k0Pnf4wyB0sQUFo8C', 'psicologo', 0, '2025-08-27 01:37:31');
+
+--

@@ -116,7 +116,7 @@
                             <div class="card h-100">
                                 <div class="row g-0">
                                     <div class="col-md-4">
-                                        <img src="https://via.placeholder.com/120" class="img-fluid profile-img" alt="Licenciado Luis">
+                                        <img src="https://cdn.vectorstock.com/i/500p/20/76/man-profile-icon-round-avatar-vector-21372076.jpg/120" class="img-fluid profile-img" alt="Licenciado Luis">
                                     </div>
                                     <div class="col-md-8">
                                         <div class="card-body">
@@ -134,7 +134,7 @@
                             <div class="card h-100">
                                 <div class="row g-0">
                                     <div class="col-md-4">
-                                        <img src="https://via.placeholder.com/120" class="img-fluid profile-img" alt="Licenciada Amanda">
+                                        <img src="https://cdn.vectorstock.com/i/500p/20/76/man-profile-icon-round-avatar-vector-21372076.jpg/120" class="img-fluid profile-img" alt="Licenciada Amanda">
                                     </div>
                                     <div class="col-md-8">
                                         <div class="card-body">
@@ -152,7 +152,7 @@
                             <div class="card h-100">
                                 <div class="row g-0">
                                     <div class="col-md-4">
-                                        <img src="https://via.placeholder.com/120" class="img-fluid profile-img" alt="Licenciado Carlos">
+                                        <img src="https://cdn.vectorstock.com/i/500p/20/76/man-profile-icon-round-avatar-vector-21372076.jpg/120" class="img-fluid profile-img" alt="Licenciado Carlos">
                                     </div>
                                     <div class="col-md-8">
                                         <div class="card-body">

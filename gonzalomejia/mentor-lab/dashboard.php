@@ -320,7 +320,7 @@ try {
                                     <div class="card h-100">
                                         <div class="row g-0">
                                             <div class="col-md-4">
-                                                <img src="<?php echo empty($mentor['foto_perfil']) ? 'https://cdn-icons-png.flaticon.com/512/3135/3135768.png' : htmlspecialchars($mentor['foto_perfil']); ?>" class="img-fluid profile-img" alt="<?php echo htmlspecialchars($mentor['nombre_completo']); ?>">
+                                                <img src="<?php echo empty($mentor['foto_perfil']) ? 'https://cdn.vectorstock.com/i/500p/20/76/man-profile-icon-round-avatar-vector-21372076.jpg' : htmlspecialchars($mentor['foto_perfil']); ?>" class="img-fluid profile-img" alt="<?php echo htmlspecialchars($mentor['nombre_completo']); ?>">
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="card-body">
