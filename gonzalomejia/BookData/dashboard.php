@@ -122,7 +122,7 @@ $borrow_history = get_user_borrow_history($_SESSION['user_id']);
                 <?php foreach ($available_books as $book): ?>
                     <div class="col-md-3 mb-4 book-card" data-category="<?php echo strtolower(str_replace(' ', '-', $book['category'])); ?>">
                         <div class="card h-100">
-                            <img src="<?php echo $book['cover_image'] ?: 'assets/images/book-placeholder.jpg'; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($book['title']); ?>">
+                            <img src="<?php echo $book['cover_image'] ?: 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png'; ?>" class="card-img-top" alt="<?php echo htmlspecialchars($book['title']); ?>">
                             <div class="card-body">
                                 <h5 class="card-title"><?php echo htmlspecialchars($book['title']); ?></h5>
                                 <p class="book-info">Autor: <?php echo htmlspecialchars($book['author']); ?></p>

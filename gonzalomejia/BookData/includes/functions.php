@@ -174,7 +174,7 @@ function get_books_by_category($category_slug) {
     // Convertir el slug de vuelta a formato normal
     $category = ucwords(str_replace('-', ' ', $category_slug));
     
-    $sql = "SELECT * FROM books WHERE category = ? AND copies_available > 0";
+    $sql = "SELECT * FROM books WHERE category = ? AND available_quantity > 0";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$category]);
     
@@ -270,5 +270,84 @@ function borrow_book_with_dates($user_id, $book_id, $borrow_date, $due_date) {
         $pdo->rollBack();
         return ['success' => false, 'message' => 'Error al procesar el préstamo: ' . $e->getMessage()];
     }
+}
+
+// Function to get user's borrowed books with detailed information
+function get_user_borrowed_books_detailed($user_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("
+        SELECT bb.*, b.title, b.author, b.cover_image, b.category,
+               DATEDIFF(bb.due_date, CURDATE()) as days_until_due,
+               CASE 
+                   WHEN bb.due_date < CURDATE() THEN 'overdue'
+                   WHEN DATEDIFF(bb.due_date, CURDATE()) <= 3 THEN 'due_soon'
+                   ELSE 'active'
+               END as status_detail
+        FROM borrowed_books bb 
+        JOIN books b ON bb.book_id = b.id 
+        WHERE bb.user_id = ? AND bb.status = 'active'
+        ORDER BY bb.due_date ASC
+    ");
+    $stmt->execute([$user_id]);
+    return $stmt->fetchAll();
+}
+
+// Function to get user's history with more details
+function get_user_borrow_history_detailed($user_id) {
+    global $pdo;
+    $stmt = $pdo->prepare("
+        SELECT bb.*, b.title, b.author, b.cover_image, b.category,
+               DATEDIFF(COALESCE(bb.return_date, bb.due_date), bb.borrow_date) as days_borrowed,
+               CASE 
+                   WHEN bb.return_date IS NOT NULL AND bb.return_date <= bb.due_date THEN 'returned_on_time'
+                   WHEN bb.return_date IS NOT NULL AND bb.return_date > bb.due_date THEN 'returned_late'
+                   ELSE bb.status
+               END as return_status
+        FROM borrowed_books bb 
+        JOIN books b ON bb.book_id = b.id 
+        WHERE bb.user_id = ? AND bb.status IN ('returned', 'overdue')
+        ORDER BY COALESCE(bb.return_date, bb.due_date) DESC
+    ");
+    $stmt->execute([$user_id]);
+    return $stmt->fetchAll();
+}
+
+// Function to get user borrowing statistics
+function get_user_borrow_stats($user_id) {
+    global $pdo;
+    
+    $stats = [];
+    
+    // Active borrows
+    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM borrowed_books WHERE user_id = ? AND status = 'active'");
+    $stmt->execute([$user_id]);
+    $stats['active_borrows'] = $stmt->fetch()['count'];
+    
+    // Overdue borrows
+    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM borrowed_books WHERE user_id = ? AND status = 'overdue'");
+    $stmt->execute([$user_id]);
+    $stats['overdue_borrows'] = $stmt->fetch()['count'];
+    
+    // Due soon (next 3 days)
+    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM borrowed_books WHERE user_id = ? AND status = 'active' AND due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY)");
+    $stmt->execute([$user_id]);
+    $stats['due_soon'] = $stmt->fetch()['count'];
+    
+    // Total historical borrows
+    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM borrowed_books WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $stats['total_borrows'] = $stmt->fetch()['count'];
+    
+    // Books returned on time
+    $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM borrowed_books WHERE user_id = ? AND status = 'returned' AND return_date <= due_date");
+    $stmt->execute([$user_id]);
+    $stats['returned_on_time'] = $stmt->fetch()['count'];
+    
+    // Average borrowing days
+    $stmt = $pdo->prepare("SELECT AVG(DATEDIFF(COALESCE(return_date, CURDATE()), borrow_date)) as avg_days FROM borrowed_books WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $stats['avg_borrow_days'] = round($stmt->fetch()['avg_days'] ?? 0, 1);
+    
+    return $stats;
 }
 ?>

@@ -95,10 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <h1 class="mb-4"><?php echo htmlspecialchars($book['title']); ?></h1>
                         <p class="lead"><strong>Autor:</strong> <?php echo htmlspecialchars($book['author']); ?></p>
                         <p><strong>Categoría:</strong> <?php echo htmlspecialchars($book['category']); ?></p>
-                        <p><strong>Copias disponibles:</strong> <?php echo $book['copies_available']; ?></p>
+                        <p><strong>Copias disponibles:</strong> <?php echo $book['available_quantity']; ?></p>
                         <p><strong>Descripción:</strong><br><?php echo nl2br(htmlspecialchars($book['description'] ?? 'No hay descripción disponible.')); ?></p>
                         
-                        <?php if ($book['copies_available'] > 0): ?>
+                        <?php if ($book['available_quantity'] > 0): ?>
                             <form method="POST" class="mt-4">
                                 <div class="row">
                                     <div class="col-md-6">

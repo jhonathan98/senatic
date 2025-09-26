@@ -117,16 +117,16 @@ INSERT INTO users (username, email, password, full_name, role) VALUES
 
 -- Sample books
 INSERT INTO books (title, author, category, description, cover_image, availability, quantity, available_quantity, publication_year) VALUES 
-('El Principito', 'Antoine de Saint-Exupéry', 'Ficción', 'Una fábula sobre la amistad, el amor y la importancia de ver con el corazón.', 'el-principito.jpg', 'available', 3, 3, 1943),
-('Ana de las Tejas Verdes', 'Lucy Maud Montgomery', 'Ficción', 'Una huérfana soñadora transforma la vida de quienes la rodean.', 'ana-de-las-tejas-verdes.jpg', 'available', 2, 2, 1908),
-('La Vida del Espacio', 'Albert Einstein', 'Ciencia', 'Explora cómo la teoría de la relatividad revolucionó nuestra visión del universo.', 'la-vida-del-espacio.jpg', 'available', 1, 1, 1915),
-('El libro que lee a personas', 'Autor desconocido', 'Fantasía', '"El libro que lee a personas" es una intrigante historia sobre un misterioso libro capaz de revelar los pensamientos, emociones y secretos más profundos de quienes lo abren.', 'el-libro-que-lee-a-personas.jpg', 'available', 1, 1, 2023),
-('El retrato de Dorian Gray', 'Oscar Wilde', 'Ficción', 'Una historia sobre la belleza, la juventud y la corrupción moral.', 'el-retrato-de-dorian-gray.jpg', 'available', 2, 2, 1890),
-('El rastro de tu sangre en la nieve', 'Gabriel García Márquez', 'Narrativo', 'Una novela sobre el poder de la memoria y la identidad.', 'el-rastro-de-tu-sangre-en-la-nieve.jpg', 'available', 1, 1, 1985),
-('Metamorfosis', 'Franz Kafka', 'Ciencia Ficción', 'Un hombre se despierta como un insecto gigante y debe enfrentar las consecuencias.', 'metamorfosis.jpg', 'available', 3, 3, 1915),
-('Coraline', 'Neil Gaiman', 'Ficción paranormal', 'Una niña descubre un mundo paralelo que parece perfecto pero tiene secretos oscuros.', 'coraline.jpg', 'available', 2, 2, 2002),
-('La Divina Comedia', 'Dante Alighieri', 'Poema épico', 'Un viaje por el infierno, el purgatorio y el cielo.', 'la-divina-comedia.jpg', 'available', 1, 1, 1320),
-('Harry Potter y la piedra filosofal', 'J.K. Rowling', 'Magia', 'La historia de Harry Potter, un niño mago que descubre su verdadera identidad.', 'harry-potter-y-la-piedra-filosofal.jpg', 'available', 5, 5, 1997);
+('El Principito', 'Antoine de Saint-Exupéry', 'Ficción', 'Una fábula sobre la amistad, el amor y la importancia de ver con el corazón.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 3, 3, 1943),
+('Ana de las Tejas Verdes', 'Lucy Maud Montgomery', 'Ficción', 'Una huérfana soñadora transforma la vida de quienes la rodean.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 2, 2, 1908),
+('La Vida del Espacio', 'Albert Einstein', 'Ciencia', 'Explora cómo la teoría de la relatividad revolucionó nuestra visión del universo.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 1, 1, 1915),
+('El libro que lee a personas', 'Autor desconocido', 'Fantasía', '"El libro que lee a personas" es una intrigante historia sobre un misterioso libro capaz de revelar los pensamientos, emociones y secretos más profundos de quienes lo abren.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 1, 1, 2023),
+('El retrato de Dorian Gray', 'Oscar Wilde', 'Ficción', 'Una historia sobre la belleza, la juventud y la corrupción moral.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 2, 2, 1890),
+('El rastro de tu sangre en la nieve', 'Gabriel García Márquez', 'Narrativo', 'Una novela sobre el poder de la memoria y la identidad.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 1, 1, 1985),
+('Metamorfosis', 'Franz Kafka', 'Ciencia Ficción', 'Un hombre se despierta como un insecto gigante y debe enfrentar las consecuencias.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 3, 3, 1915),
+('Coraline', 'Neil Gaiman', 'Ficción paranormal', 'Una niña descubre un mundo paralelo que parece perfecto pero tiene secretos oscuros.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 2, 2, 2002),
+('La Divina Comedia', 'Dante Alighieri', 'Poema épico', 'Un viaje por el infierno, el purgatorio y el cielo.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 1, 1, 1320),
+('Harry Potter y la piedra filosofal', 'J.K. Rowling', 'Magia', 'La historia de Harry Potter, un niño mago que descubre su verdadera identidad.', 'https://img.lovepik.com/png/20231109/book-cartoon-illustration-school-start-reading-reading-book_539915_wh1200.png', 'available', 5, 5, 1997);
 
 -- Insert sample users (password: "password")
 INSERT INTO users (username, email, password, full_name, role) VALUES 
