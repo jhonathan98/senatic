@@ -47,8 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     // Hash de la contraseña
                     $hashed_password = password_hash($contrasena, PASSWORD_DEFAULT);
                     
-                    // Insertar nuevo usuario con rol de estudiante
-                    $stmt = $conn->prepare("INSERT INTO usuarios (nombre_completo, correo_electronico, contrasena, telefono, telefono_recuperacion, fecha_nacimiento, rol) VALUES (?, ?, ?, ?, ?, ?, 'estudiante')");
+                    // Insertar nuevo usuario con rol de usuario (estudiante)
+                    $stmt = $conn->prepare("INSERT INTO usuarios (nombre_completo, correo_electronico, contrasena, telefono, telefono_recuperacion, fecha_nacimiento, rol) VALUES (?, ?, ?, ?, ?, ?, 'usuario')");
                     $stmt->execute([$nombre_completo, $correo, $hashed_password, $telefono, $telefono_recuperacion, $fecha_nacimiento]);
                     
                     // Redirigir a la página de inicio de sesión

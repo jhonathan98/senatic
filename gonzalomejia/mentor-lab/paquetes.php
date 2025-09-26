@@ -121,7 +121,7 @@ $es_admin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
                             <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Material de estudio básico</li>
                             <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Soporte por correo</li>
                         </ul>
-                        <button class="btn btn-primary w-100 mt-3">Seleccionar Plan</button>
+                        <button class="btn btn-primary w-100 mt-3" onclick="seleccionarPlan('basico', 299, 'Paquete Básico')">Seleccionar Plan</button>
                     </div>
                 </div>
             </div>
@@ -142,7 +142,7 @@ $es_admin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
                             <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Soporte por WhatsApp</li>
                             <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Ejercicios prácticos</li>
                         </ul>
-                        <button class="btn btn-success w-100 mt-3">Seleccionar Plan</button>
+                        <button class="btn btn-success w-100 mt-3" onclick="seleccionarPlan('estandar', 499, 'Paquete Estándar')">Seleccionar Plan</button>
                     </div>
                 </div>
             </div>
@@ -163,7 +163,7 @@ $es_admin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
                             <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Ejercicios avanzados</li>
                             <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Sesiones grupales adicionales</li>
                         </ul>
-                        <button class="btn btn-warning w-100 mt-3">Seleccionar Plan</button>
+                        <button class="btn btn-warning w-100 mt-3" onclick="seleccionarPlan('premium', 799, 'Paquete Premium')">Seleccionar Plan</button>
                     </div>
                 </div>
             </div>
@@ -175,7 +175,7 @@ $es_admin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
             <!-- Promoción 1 -->
             <div class="col-md-6 mb-4">
                 <div class="card bg-gradient" style="background: linear-gradient(45deg, #6a11cb, #2575fc);">
-                    <div class="card-body text-white">
+                    <div class="card-body">
                         <h4 class="card-title">¡Oferta de Nuevo Ingreso!</h4>
                         <p class="card-text">50% de descuento en tu primer mes al suscribirte a cualquier paquete.</p>
                         <ul class="list-unstyled">
@@ -190,7 +190,7 @@ $es_admin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
             <!-- Promoción 2 -->
             <div class="col-md-6 mb-4">
                 <div class="card bg-gradient" style="background: linear-gradient(45deg, #ff416c, #ff4b2b);">
-                    <div class="card-body text-white">
+                    <div class="card-body">
                         <h4 class="card-title">Plan Familiar</h4>
                         <p class="card-text">20% de descuento al inscribir 2 o más estudiantes de la misma familia.</p>
                         <ul class="list-unstyled">
@@ -209,22 +209,13 @@ $es_admin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
     
     <!-- Paquetes y Promociones JavaScript -->
     <script>
-        // Función para manejar la selección de paquetes
-        function seleccionarPaquete(tipo, precio) {
-            if (confirm(`¿Deseas suscribirte al ${tipo} por $${precio}/mes?`)) {
-                alert('Te redirigiremos al sistema de pago...');
+        // Función para seleccionar un plan específico
+        function seleccionarPlan(tipo, precio, nombre) {
+            if (confirm(`¿Deseas suscribirte al ${nombre} por $${precio}/mes?`)) {
+                // Redirigir a la página de pagos con los parámetros del plan
+                window.location.href = `pagos.php?plan=${tipo}&precio=${precio}&nombre=${encodeURIComponent(nombre)}`;
             }
         }
-        
-        // Agregar eventos a los botones de paquetes
-        document.querySelectorAll('.card .btn-primary, .card .btn-success, .card .btn-warning').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('.card');
-                const tipo = card.querySelector('h3').textContent;
-                const precio = card.querySelector('h4').textContent.replace(/[^\d]/g, '');
-                seleccionarPaquete(tipo, precio);
-            });
-        });
         
         // Función para aplicar código promocional
         function aplicarPromocion(codigo) {

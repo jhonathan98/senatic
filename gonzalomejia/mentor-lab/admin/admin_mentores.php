@@ -109,9 +109,9 @@ try {
             <div class="col-md-12">
                 <div class="d-flex justify-content-between align-items-center">
                     <h2>Gestión de Mentores</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#agregarMentorModal">
-                        <i class="fas fa-plus"></i> Agregar Mentor
-                    </button>
+                    <a href="registrar_mentor.php" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Registrar Nuevo Mentor
+                    </a>
                 </div>
             </div>
         </div>

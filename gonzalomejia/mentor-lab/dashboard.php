@@ -242,6 +242,9 @@ try {
                     <li class="nav-item">
                         <a class="nav-link" href="admin/admin_mentores.php">Administrar Mentores</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin/gestionar_suscripciones.php">Gestionar Suscripciones</a>
+                    </li>
                     <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav ms-auto">
