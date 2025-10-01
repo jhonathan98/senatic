@@ -355,7 +355,7 @@ $page_title = 'Gestión de Libros';
                                 
                                 <img src="<?php echo $book['cover_image']; ?>" 
                                      alt="<?php echo htmlspecialchars($book['title']); ?>" 
-                                     class="book-cover">
+                                     class="book-cover" style="width: 300px; height: auto;">
                                 
                                 <div class="book-info">
                                     <div class="book-title"><?php echo htmlspecialchars($book['title']); ?></div>

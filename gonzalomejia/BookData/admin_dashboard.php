@@ -65,10 +65,10 @@ $recent_activity = $stmt->fetchAll();
                 <!-- Acciones Rápidas -->
                 <div class="quick-actions">
                     <h5 class="mb-3"><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h5>
-                    <a href="add_book.php" class="quick-action-btn">
+                    <a href="manage_books.php" class="quick-action-btn">
                         <i class="fas fa-plus me-2"></i>Agregar Libro
                     </a>
-                    <a href="add_user.php" class="quick-action-btn">
+                    <a href="manage_users.php" class="quick-action-btn">
                         <i class="fas fa-user-plus me-2"></i>Agregar Usuario
                     </a>
                     <a href="manage_categories.php" class="quick-action-btn">
