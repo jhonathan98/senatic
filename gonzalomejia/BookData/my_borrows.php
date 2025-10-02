@@ -40,20 +40,13 @@ $borrow_history = get_user_borrow_history_detailed($_SESSION['user_id']);
 
 // Get user borrowing statistics
 $stats = get_user_borrow_stats($_SESSION['user_id']);
+
+// Include header
+include 'includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookData - Mis Préstamos</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <style>
+<!-- Estilos específicos para la página de mis préstamos -->
+<style>
         .main-content {
             padding-top: 6rem;
             min-height: 100vh;
@@ -268,13 +261,18 @@ $stats = get_user_borrow_stats($_SESSION['user_id']);
         .profile-btn {
             position: relative;
         }
-    </style>
-</head>
-<body>
-    <?php require_once 'includes/header.php'; ?>
-    
-    <div class="main-content">
-        <div class="container">
+        
+        body {
+            padding-top: 80px; /* Espacio para el navbar fijo */
+        }
+        
+        .main-content {
+            padding-top: 1rem; /* Reducir padding ya que el body tiene el espacio necesario */
+        }
+</style>
+
+<div class="main-content">
+    <div class="container">
             <!-- Page Header -->
             <div class="row mb-4">
                 <div class="col-12">
@@ -626,10 +624,9 @@ $stats = get_user_borrow_stats($_SESSION['user_id']);
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/my_borrows.js"></script>
-</body>
-</html>
+<!-- Script específico para my_borrows -->
+<script src="assets/js/my_borrows.js"></script>
+
+<?php include 'includes/footer.php'; ?>

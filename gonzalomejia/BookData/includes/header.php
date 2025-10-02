@@ -21,9 +21,6 @@ if (isset($_SESSION['user_id'])) {
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
-    <!-- Bootstrap JS and Custom JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/app.js"></script>
     <style>
         /* Navbar moderno con glassmorphism */
         .navbar {
@@ -500,11 +497,6 @@ if (isset($_SESSION['user_id'])) {
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="favorites.php">
-                                    <i class="fas fa-heart"></i>Favoritos
-                                </a>
-                            </li>
-                            <li>
                                 <a class="dropdown-item" href="change_password.php">
                                     <i class="fas fa-key"></i>Cambiar Contraseña
                                 </a>
@@ -625,16 +617,6 @@ if (isset($_SESSION['user_id'])) {
                     navbar.classList.remove('scrolled');
                 }
             });
-            
-            // Auto-cerrar dropdowns al hacer clic fuera
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.dropdown')) {
-                    const dropdowns = document.querySelectorAll('.dropdown-menu.show');
-                    dropdowns.forEach(dropdown => {
-                        dropdown.classList.remove('show');
-                    });
-                }
-            });
         });
         
         // Función para toggle del sidebar
@@ -669,3 +651,7 @@ if (isset($_SESSION['user_id'])) {
             }
         });
     </script>
+    
+    <!-- Bootstrap JS debe cargarse antes de otros scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/app.js"></script>

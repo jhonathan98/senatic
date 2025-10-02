@@ -1,0 +1,3 @@
+    </div> <!-- Cierre de main-content -->
+</body>
+</html>
