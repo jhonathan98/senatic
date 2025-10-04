@@ -136,8 +136,6 @@ $page_title = 'Devoluciones Pendientes';
 </head>
 <body>
     <?php require_once 'includes/header.php'; ?>
-    
-    <div class="main-content">
         <div class="container-fluid">
             <div class="manage-container">
                 <!-- Page Header -->
@@ -467,7 +465,6 @@ $page_title = 'Devoluciones Pendientes';
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Extend Due Date Modal -->
     <div class="modal fade" id="extendDueDateModal" tabindex="-1">
@@ -641,9 +638,20 @@ $page_title = 'Devoluciones Pendientes';
                 }, 50);
             });
         }
-    </script>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Initialize animations
+            animateCounters();
+            updateOverdueStatus();
+        });
+    </script>
+</div>
 </body>
 </html>

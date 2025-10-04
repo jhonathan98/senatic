@@ -80,8 +80,8 @@ function borrow_book($user_id, $book_id) {
         return false;
     }
     
-    // Check if user already has this book
-    $stmt = $pdo->prepare("SELECT * FROM borrowed_books WHERE user_id = ? AND book_id = ? AND status = 'active'");
+    // Check if user already has this book (active or overdue)
+    $stmt = $pdo->prepare("SELECT * FROM borrowed_books WHERE user_id = ? AND book_id = ? AND status IN ('active', 'overdue')");
     $stmt->execute([$user_id, $book_id]);
     if ($stmt->rowCount() > 0) {
         return false;
@@ -96,7 +96,7 @@ function borrow_book($user_id, $book_id) {
     $stmt->execute([$user_id, $book_id, $borrow_date, $due_date]);
     
     // Update book availability
-    $stmt = $pdo->prepare("UPDATE books SET copies_available = copies_available - 1 WHERE id = ?");
+    $stmt = $pdo->prepare("UPDATE books SET available_quantity = available_quantity - 1 WHERE id = ?");
     $stmt->execute([$book_id]);
     
     return true;
@@ -186,12 +186,12 @@ function get_books_by_search_and_category($search_query, $category) {
     global $pdo;
     
     if ($category === 'all') {
-        $sql = "SELECT * FROM books WHERE (title LIKE ? OR author LIKE ?) AND copies_available > 0";
+        $sql = "SELECT * FROM books WHERE (title LIKE ? OR author LIKE ?) AND available_quantity > 0";
         $search_param = "%{$search_query}%";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$search_param, $search_param]);
     } else {
-        $sql = "SELECT * FROM books WHERE (title LIKE ? OR author LIKE ?) AND category = ? AND copies_available > 0";
+        $sql = "SELECT * FROM books WHERE (title LIKE ? OR author LIKE ?) AND category = ? AND available_quantity > 0";
         $search_param = "%{$search_query}%";
         $stmt = $pdo->prepare($sql);
         $category_name = ucwords(str_replace('-', ' ', $category));
@@ -227,7 +227,7 @@ function borrow_book_with_dates($user_id, $book_id, $borrow_date, $due_date) {
         $pdo->beginTransaction();
         
         // Check if book is available
-        $stmt = $pdo->prepare("SELECT * FROM books WHERE id = ? AND copies_available > 0");
+        $stmt = $pdo->prepare("SELECT * FROM books WHERE id = ? AND available_quantity > 0");
         $stmt->execute([$book_id]);
         $book = $stmt->fetch();
         
@@ -235,11 +235,10 @@ function borrow_book_with_dates($user_id, $book_id, $borrow_date, $due_date) {
             return ['success' => false, 'message' => 'El libro no está disponible.'];
         }
         
-        // Check if user already has this book
-        $stmt = $pdo->prepare("SELECT * FROM borrowed_books WHERE user_id = ? AND book_id = ? AND status = 'active'");
-        $stmt->execute([$user_id, $book_id]);
-        if ($stmt->rowCount() > 0) {
-            return ['success' => false, 'message' => 'Ya tienes este libro prestado.'];
+        // Clean up any inconsistent states and check if user can borrow this book
+        if (!check_and_clean_borrow_state($user_id, $book_id)) {
+            $pdo->rollBack();
+            return ['success' => false, 'message' => 'Ya tienes este libro prestado o vencido. Debes devolverlo primero.'];
         }
         
         // Validate dates
@@ -255,12 +254,25 @@ function borrow_book_with_dates($user_id, $book_id, $borrow_date, $due_date) {
             return ['success' => false, 'message' => 'La fecha de devolución debe ser posterior a la fecha de préstamo.'];
         }
         
-        // Insert into borrowed_books table
-        $stmt = $pdo->prepare("INSERT INTO borrowed_books (user_id, book_id, borrow_date, due_date, status) VALUES (?, ?, ?, ?, 'active')");
-        $stmt->execute([$user_id, $book_id, $borrow_date, $due_date]);
+        // Insert into borrowed_books table with error handling
+        try {
+            $stmt = $pdo->prepare("INSERT INTO borrowed_books (user_id, book_id, borrow_date, due_date, status) VALUES (?, ?, ?, ?, 'active')");
+            $result = $stmt->execute([$user_id, $book_id, $borrow_date, $due_date]);
+            
+            if (!$result) {
+                throw new Exception("Error al insertar el registro de préstamo");
+            }
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            if ($e->getCode() == 23000) { // Integrity constraint violation
+                return ['success' => false, 'message' => 'Ya existe un préstamo activo para este libro. Por favor, verifica el estado de tus préstamos.'];
+            } else {
+                return ['success' => false, 'message' => 'Error en la base de datos: ' . $e->getMessage()];
+            }
+        }
         
         // Update book availability
-        $stmt = $pdo->prepare("UPDATE books SET copies_available = copies_available - 1 WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE books SET available_quantity = available_quantity - 1 WHERE id = ?");
         $stmt->execute([$book_id]);
         
         $pdo->commit();
@@ -349,5 +361,86 @@ function get_user_borrow_stats($user_id) {
     $stats['avg_borrow_days'] = round($stmt->fetch()['avg_days'] ?? 0, 1);
     
     return $stats;
+}
+
+// Function to check and clean inconsistent borrow states
+function check_and_clean_borrow_state($user_id, $book_id) {
+    global $pdo;
+    
+    try {
+        // Check for any existing borrows for this user-book combination
+        $stmt = $pdo->prepare("
+            SELECT id, status, due_date, return_date 
+            FROM borrowed_books 
+            WHERE user_id = ? AND book_id = ?
+            ORDER BY borrow_date DESC
+        ");
+        $stmt->execute([$user_id, $book_id]);
+        $existing_borrows = $stmt->fetchAll();
+        
+        foreach ($existing_borrows as $borrow) {
+            // If there's a borrow without return_date but marked as returned, fix it
+            if ($borrow['status'] === 'returned' && $borrow['return_date'] === null) {
+                $stmt = $pdo->prepare("UPDATE borrowed_books SET return_date = NOW() WHERE id = ?");
+                $stmt->execute([$borrow['id']]);
+            }
+            
+            // If there's an overdue borrow that should be marked as such
+            if ($borrow['status'] === 'active' && $borrow['due_date'] < date('Y-m-d')) {
+                $stmt = $pdo->prepare("UPDATE borrowed_books SET status = 'overdue' WHERE id = ?");
+                $stmt->execute([$borrow['id']]);
+            }
+        }
+        
+        // Check again for active/overdue borrows after cleanup
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as count 
+            FROM borrowed_books 
+            WHERE user_id = ? AND book_id = ? AND status IN ('active', 'overdue')
+        ");
+        $stmt->execute([$user_id, $book_id]);
+        $active_count = $stmt->fetch()['count'];
+        
+        return $active_count === 0;
+        
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+// Function to get detailed borrow status for debugging
+function get_user_book_borrow_status($user_id, $book_id) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("
+        SELECT bb.*, b.title, b.author,
+               CASE 
+                   WHEN bb.status = 'active' AND bb.due_date < CURDATE() THEN 'overdue_not_updated'
+                   ELSE bb.status
+               END as actual_status
+        FROM borrowed_books bb 
+        JOIN books b ON bb.book_id = b.id 
+        WHERE bb.user_id = ? AND bb.book_id = ?
+        ORDER BY bb.borrow_date DESC
+    ");
+    $stmt->execute([$user_id, $book_id]);
+    return $stmt->fetchAll();
+}
+
+// Function to update overdue books status
+function update_overdue_books() {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->prepare("
+            UPDATE borrowed_books 
+            SET status = 'overdue' 
+            WHERE status = 'active' AND due_date < CURDATE()
+        ");
+        $result = $stmt->execute();
+        return $stmt->rowCount(); // Returns number of updated records
+    } catch (Exception $e) {
+        return false;
+    }
 }
 ?>

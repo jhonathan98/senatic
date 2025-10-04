@@ -179,8 +179,6 @@ $page_title = 'Gestión de Categorías';
 </head>
 <body>
     <?php require_once 'includes/header.php'; ?>
-    
-    <div class="main-content">
         <div class="container-fluid">
             <div class="manage-container">
                 <!-- Page Header -->
@@ -501,12 +499,6 @@ $page_title = 'Gestión de Categorías';
     </div>
 
     <script>
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            setupFilters();
-            animateCounters();
-        });
-
         // Setup filters
         function setupFilters() {
             const searchInput = document.getElementById('searchCategories');
@@ -653,32 +645,50 @@ $page_title = 'Gestión de Categorías';
         }
 
         // Validate merge form
-        document.getElementById('mergeCategoriesModal').addEventListener('shown.bs.modal', function() {
-            const sourceSelect = document.getElementById('source_category');
-            const targetSelect = document.getElementById('target_category');
-            
-            sourceSelect.addEventListener('change', function() {
-                const sourceValue = this.value;
-                const targetOptions = targetSelect.querySelectorAll('option');
-                
-                targetOptions.forEach(option => {
-                    if (option.value === sourceValue) {
-                        option.disabled = true;
-                        option.style.color = '#ccc';
-                    } else {
-                        option.disabled = false;
-                        option.style.color = '';
+        function initializeMergeModal() {
+            const modal = document.getElementById('mergeCategoriesModal');
+            if (modal) {
+                modal.addEventListener('shown.bs.modal', function() {
+                    const sourceSelect = document.getElementById('source_category');
+                    const targetSelect = document.getElementById('target_category');
+                    
+                    if (sourceSelect && targetSelect) {
+                        sourceSelect.addEventListener('change', function() {
+                            const sourceValue = this.value;
+                            const targetOptions = targetSelect.querySelectorAll('option');
+                            
+                            targetOptions.forEach(option => {
+                                if (option.value === sourceValue) {
+                                    option.disabled = true;
+                                    option.style.color = '#ccc';
+                                } else {
+                                    option.disabled = false;
+                                    option.style.color = '';
+                                }
+                            });
+                            
+                            if (targetSelect.value === sourceValue) {
+                                targetSelect.value = '';
+                            }
+                        });
                     }
                 });
-                
-                if (targetSelect.value === sourceValue) {
-                    targetSelect.value = '';
-                }
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+
+            // Initialize modals and animations
+            initializeMergeModal();
+            animateCounters();
         });
     </script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
 </body>
 </html>

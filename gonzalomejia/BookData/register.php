@@ -6,6 +6,11 @@ require_once 'includes/functions.php';
 $error_message = '';
 $success_message = '';
 
+// Initialize form variables
+$full_name = '';
+$email = '';
+$username = '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $full_name = sanitize_input($_POST['full_name']);
     $email = sanitize_input($_POST['email']);
@@ -17,6 +22,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate inputs
     if (empty($full_name) || empty($email) || empty($username) || empty($password) || empty($confirm_password)) {
         $error_message = "Por favor completa todos los campos.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_message = "Por favor ingresa un correo electrónico válido.";
+    } elseif (strlen($username) < 3) {
+        $error_message = "El nombre de usuario debe tener al menos 3 caracteres.";
     } elseif ($password !== $confirm_password) {
         $error_message = "Las contraseñas no coinciden.";
     } elseif (strlen($password) < 8) {
@@ -38,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $success_message = "Registro exitoso. Puedes iniciar sesión ahora.";
             
             // Clear form data
-            $full_name = $email = $username = $password = $confirm_password = '';
+            $full_name = $email = $username = '';
         }
     }
 }
@@ -96,6 +105,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-color: #3b71e7;
             box-shadow: 0 0 0 0.2rem rgba(59, 113, 231, 0.25);
         }
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
+        .form-control.is-valid {
+            border-color: #28a745;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73l.4-.4 1.4-1.4L7.7 1.33 7.3.93 3.7 4.53 2.7 3.53l-.4.4L2.3 6.73z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(.375em + .1875rem) center;
+            background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+        }
         .btn-primary {
             background-color: #3b71e7;
             border-color: #3b71e7;
@@ -125,14 +148,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #2c55bb;
         }
         .error-message {
-            color: #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
             font-size: 0.9rem;
-            margin-top: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
         }
         .success-message {
-            color: #28a745;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
             font-size: 0.9rem;
-            margin-top: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
         }
         @media (max-width: 768px) {
             .register-container {
@@ -154,6 +187,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="register-image"></div>
         <div class="register-form">
             <h2>📚 Book Data</h2>
+            <?php if ($error_message): ?>
+                <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
+            <?php endif; ?>
+            <?php if ($success_message): ?>
+                <div class="success-message"><?php echo htmlspecialchars($success_message); ?></div>
+            <?php endif; ?>
             <form id="registerForm" action="register.php" method="POST">
                 <div class="form-group">
                     <label for="full_name">Nombre completo</label>
@@ -176,12 +215,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Registrarse</button>
-                <?php if ($error_message): ?>
-                    <div class="error-message"><?php echo htmlspecialchars($error_message); ?></div>
-                <?php endif; ?>
-                <?php if ($success_message): ?>
-                    <div class="success-message"><?php echo htmlspecialchars($success_message); ?></div>
-                <?php endif; ?>
                 <div class="login-link">
                     ¿Ya tienes una cuenta? <a href="login.php">Inicia sesión aquí</a>
                 </div>
@@ -194,21 +227,61 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script>
         // Form validation
         document.getElementById('registerForm').addEventListener('submit', function(e) {
-            const full_name = document.getElementById('full_name').value;
-            const email = document.getElementById('email').value;
-            const username = document.getElementById('username').value;
+            const full_name = document.getElementById('full_name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const confirm_password = document.getElementById('confirm_password').value;
             
+            // Clear previous error styling
+            document.querySelectorAll('.form-control').forEach(input => {
+                input.classList.remove('is-invalid');
+            });
+            
+            let hasError = false;
+            let errorMessage = '';
+            
             if (!full_name || !email || !username || !password || !confirm_password) {
-                e.preventDefault();
-                alert('Por favor completa todos los campos.');
+                errorMessage = 'Por favor completa todos los campos.';
+                hasError = true;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                errorMessage = 'Por favor ingresa un correo electrónico válido.';
+                document.getElementById('email').classList.add('is-invalid');
+                hasError = true;
+            } else if (username.length < 3) {
+                errorMessage = 'El nombre de usuario debe tener al menos 3 caracteres.';
+                document.getElementById('username').classList.add('is-invalid');
+                hasError = true;
             } else if (password !== confirm_password) {
-                e.preventDefault();
-                alert('Las contraseñas no coinciden.');
+                errorMessage = 'Las contraseñas no coinciden.';
+                document.getElementById('password').classList.add('is-invalid');
+                document.getElementById('confirm_password').classList.add('is-invalid');
+                hasError = true;
             } else if (password.length < 8) {
+                errorMessage = 'La contraseña debe tener al menos 8 caracteres.';
+                document.getElementById('password').classList.add('is-invalid');
+                hasError = true;
+            }
+            
+            if (hasError) {
                 e.preventDefault();
-                alert('La contraseña debe tener al menos 8 caracteres.');
+                alert(errorMessage);
+            }
+        });
+        
+        // Real-time password confirmation validation
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (password && confirmPassword) {
+                if (password === confirmPassword) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
             }
         });
     </script>
